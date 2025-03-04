@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Http\Resources\RegisterUserResource;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -13,6 +14,22 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    /**
+     * Register a new user
+     *
+     * Creates a new user account and returns an authentication token.
+     *
+     * @bodyParam name string required The name of the user. Example: Ali
+     * @bodyParam email string required The email address of the user. Must be unique. Example: ali@example.com
+     * @bodyParam password string required The password (minimum 8 characters). Example: password123
+     * @bodyParam password_confirmation string required Must match the password.
+     *
+     * @response 201 {
+     *   "message": "User registered successfully",
+     *   "user": {"id": 1, "name": "Ali", "email": "ali@example.com"},
+     *   "token": "1|random-token"
+     * }
+     */
     public function register(RegisterRequest $request): JsonResponse
     {
         $user = User::create([
@@ -25,13 +42,13 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'کاربر با موفقیت ثبت نام کرد',
-            'user' => new UserResource($user),
+            'user' => new RegisterUserResource($user),
             'token' => $token
         ],201);
 
     }
 
-    public function login(LoginRequest $request): void
+    public function login(LoginRequest $request): JsonResponse
     {
         $user = User::where('email' , $request->email)->first();
 
@@ -40,6 +57,13 @@ class AuthController extends Controller
                'email' => ['اطلاعات نامعتبر ']
             ]);
         }
+        $token = $user->createToken('auth-token')->plainTextToken;
+        return response()->json([
+            'message' => 'کاربر با موفقیت وارد شد',
+            'user' => new RegisterUserResource($user),
+            'token' => $token
+        ],201);
+
     }
 
     public function logout(): JsonResponse

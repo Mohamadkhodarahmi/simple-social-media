@@ -21,16 +21,40 @@ class PostController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Create a new post
+     *
+     * Allows an authenticated user to create a post with optional file attachment.
+     *
+     * @bodyParam content string required The content of the post. Example: This is my first post!
+     * @bodyParam file file optional An image or file attachment (jpg, png, pdf, max 2MB).
+     *
+     * @response 201 {
+     *   "id": 1,
+     *   "content": "This is my first post!",
+     *   "user": {"id": 1, "name": "Ali", "email": "ali@example.com"},
+     *   "likes_count": 0,
+     *   "comments_count": 0,
+     *   "attachments": [{"id": 1, "file_path": "attachments/file.jpg", "file_type": "image/jpeg"}],
+     *   "created_at": "just now"
+     * }
      */
     public function store(PostRequest $request): PostResource
     {
-        $post= auth()->user()->posts()->create($request->validated());
-        return new PostResource($post->load('user','like','comments'));
+        $post= auth()->user()->posts()->create($request->only('content'));
+
+        if ($request->hasFile('file')){
+            $file = $request->file('file');
+            $path = $file->store('attachments' , 'public');
+            $post->attahcments()->create([
+                'file_path' => $path,
+                'file_type' => $file->getClientMimeType()
+            ]);
+        }
+        return new PostResource($post->load('user','like','comments','attachments'));
     }
 
     /**
-     * Display the specified resource.
+     * @show
      */
     public function show(Post $post): PostResource
     {
@@ -38,7 +62,7 @@ class PostController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * @update
      */
     public function update(PostRequest $request,Post $post): PostResource
     {
@@ -48,7 +72,7 @@ class PostController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * @destroy
      */
     public function destroy(Post $post): JsonResponse
     {

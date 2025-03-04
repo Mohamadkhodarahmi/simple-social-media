@@ -1,8 +1,38 @@
 <?php
 
 use Dedoc\Scramble\Http\Middleware\RestrictedDocsAccess;
-
+use App\Http\Responses\ApiResponses;
 return [
+
+    'responses'=>[
+        'defaults'=> [
+            200 => ApiResponses::success(['example' => 'data']),
+            401 => ApiResponses::unauthenticated(),
+            403 => ApiResponses::forbidden(),
+            404 => ApiResponses::notFound(),
+            422 => ApiResponses::validationError(['field' => ['Error message']]),
+        ],
+        'examples' => [
+            'application/json' => [
+                'POST /api/posts' => [
+                    201 => ApiResponses::success([
+                        'id' => 1,
+                        'content' => 'This is my first post!',
+                        'user' => ['id' => 1, 'name' => 'Ali'],
+                    ], 201),
+                    422 => ApiResponses::validationError(['content' => ['The content field is required.']]),
+                ],
+                'POST /api/comments' => [
+                    201 => ApiResponses::success([
+                        'id' => 1,
+                        'content' => 'Great post!',
+                        'user' => ['id' => 1, 'name' => 'Ali'],
+                    ], 201),
+                ],
+            ],
+        ],
+        ],
+
     /*
      * Your API path. By default, all routes starting with this path will be added to the docs.
      * If you need to change this behavior, you can add your custom routes resolver using `Scramble::routes()`.
