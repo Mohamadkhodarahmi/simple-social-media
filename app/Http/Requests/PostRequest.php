@@ -21,9 +21,7 @@ class PostRequest extends FormRequest
      */
     public function rules(): array
     {
-        if (empty($this->all())) {
-            dd('No data received in request');
-        }
+
         return [
             'content' => 'required|string|max:1000',
             'file' => 'nullable|file|mimes:jpg,png,pdf|max:2048'

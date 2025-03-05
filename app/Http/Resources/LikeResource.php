@@ -19,7 +19,7 @@ class LikeResource extends JsonResource
             'user_id' => $this->user_id,
             'user_name' => $this->user->name,
             'post_id' => $this->post_id,
-            'created_at' => $this->created_at->diffForHumans,
+            'created_at' => $this->created_at->diffForHumans(),
         ];
     }
 }

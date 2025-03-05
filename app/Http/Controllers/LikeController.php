@@ -16,7 +16,7 @@ class LikeController extends Controller
     use AuthorizesRequests;
 
     /**
-     * Store a new like
+     * like a post
      *
      * @param LikeRequest $request
      * @return JsonResponse
@@ -24,14 +24,12 @@ class LikeController extends Controller
     public function store(LikeRequest $request): JsonResponse
     {
         try {
-            // Start a database transaction
             return DB::transaction(function () use ($request) {
                 $data = $request->validated();
                 $data['user_id'] = auth()->id();
 
-                // Check if like already exists (use first() for efficiency)
-                $existingLike = Like::where($data)->first();
-                if ($existingLike) {
+
+                if (Like::where($data)->exists()) {
                     return response()->json(
                         ApiResponses::validationError([
                             'message' => 'شما قبلاً این پست را لایک کرده‌اید'
@@ -40,9 +38,7 @@ class LikeController extends Controller
                     );
                 }
 
-                // Create like and load relationships in one query
                 $like = Like::create($data);
-                $like->load('user');
 
                 return response()->json(
                     ApiResponses::success(new LikeResource($like)),
@@ -50,21 +46,20 @@ class LikeController extends Controller
                 );
             });
         } catch (\Exception $e) {
-            // Log the error for debugging
             Log::error('Like creation error: ' . $e->getMessage());
 
             return response()->json(
                 ApiResponses::error([
                     'message' => 'خطا در ثبت لایک',
                     'error' => config('app.debug') ? $e->getMessage() : null
-                ]),
-                422
+                ],500),
+                500
             );
         }
     }
 
     /**
-     * Remove a like
+     * delete a like
      *
      * @param Like $like
      * @return JsonResponse
@@ -72,10 +67,7 @@ class LikeController extends Controller
     public function destroy(Like $like): JsonResponse
     {
         try {
-            // Authorize the deletion
             $this->authorize('delete', $like);
-
-            // Delete the like
             $like->delete();
 
             return response()->json(
@@ -92,20 +84,19 @@ class LikeController extends Controller
                 403
             );
         } catch (\Exception $e) {
-            // Log unexpected errors
             Log::error('Like deletion error: ' . $e->getMessage());
 
             return response()->json(
                 ApiResponses::error([
                     'message' => 'خطا در حذف لایک'
-                ]),
+                ],500),
                 500
             );
         }
     }
 
     /**
-     * Get count of liked posts for authenticated user
+     * liked posts count
      *
      * @return JsonResponse
      */
@@ -114,7 +105,6 @@ class LikeController extends Controller
         try {
             $user = auth()->user();
 
-            // Early return if user is not authenticated
             if (!$user) {
                 return response()->json(
                     ApiResponses::unauthenticated([
@@ -124,7 +114,6 @@ class LikeController extends Controller
                 );
             }
 
-            // Get likes count efficiently
             $count = $user->likes()->count();
 
             return response()->json(
@@ -134,14 +123,13 @@ class LikeController extends Controller
                 200
             );
         } catch (\Exception $e) {
-            // Log unexpected errors
             Log::error('Likes count error: ' . $e->getMessage());
 
             return response()->json(
                 ApiResponses::error([
                     'message' => 'خطای سرور رخ داد',
                     'error' => config('app.debug') ? $e->getMessage() : null
-                ]),
+                ],500),
                 500
             );
         }
