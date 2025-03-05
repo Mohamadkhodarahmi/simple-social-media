@@ -25,4 +25,11 @@ class LikeRequest extends FormRequest
             'post_id' => 'required|exists:posts,id'
         ];
     }
+    public function messages(): array
+    {
+        return [
+            'post_id.required' => 'شناسه پست الزامی است.',
+            'post_id.exists' => 'پست مورد نظر وجود ندارد.',
+        ];
+    }
 }

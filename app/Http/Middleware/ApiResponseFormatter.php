@@ -13,7 +13,6 @@ class ApiResponseFormatter
     {
         $response = $next($request);
 
-
         if ($response instanceof JsonResponse) {
             $originalData = $response->getData(true);
             $statusCode = $response->getStatusCode();
@@ -21,14 +20,20 @@ class ApiResponseFormatter
             if ($statusCode >= 400) {
                 return response()->json([
                     'message' => $originalData['message'] ?? Response::$statusTexts[$statusCode],
+                    'status' => $statusCode,
                     'errors' => $originalData['errors'] ?? [],
                 ], $statusCode);
             }
 
+            $data = $originalData['response']['data'] ?? $originalData;
+            $responseStatus = $originalData['status'] ?? $statusCode;
+
+            $finalStatus = (is_numeric($responseStatus) && $responseStatus >= 100 && $responseStatus <= 599) ? $responseStatus : 200;
+
             return response()->json([
-                'data' => $originalData,
+                'data' => $data,
                 'status' => 'success',
-            ], $statusCode);
+            ], $finalStatus);
         }
 
         return $response;

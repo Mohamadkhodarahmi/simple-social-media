@@ -26,4 +26,12 @@ class CommentRequest extends FormRequest
             'content' => 'required|string|max:500'
         ];
     }
+    public function messages(): array
+    {
+        return [
+            'post_id.required' => 'شناسه پست الزامی است.',
+            'post_id.exists' => 'پست مورد نظر وجود ندارد.',
+            'content.required' => 'متن کامنت الزامی است.',
+        ];
+    }
 }
