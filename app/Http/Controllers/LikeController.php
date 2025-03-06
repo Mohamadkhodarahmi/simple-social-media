@@ -41,7 +41,7 @@ class LikeController extends Controller
                 $like = Like::create($data);
 
                 return response()->json(
-                    ApiResponses::success(new LikeResource($like)),
+                    ApiResponses::success(new LikeResource($like), 201,'شما با موفقیت لایک کردید'),
                     201
                 );
             });

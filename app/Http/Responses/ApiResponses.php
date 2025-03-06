@@ -4,13 +4,14 @@ namespace App\Http\Responses;
 
 class ApiResponses
 {
-    public static function success($data, $status = 200): array
+    public static function success($data, $status = 200,$message=null): array
     {
         if (!is_numeric($status) || $status < 100 || $status > 599) {
             $status = 200;
         }
         return [
             'status' => $status,
+            'message' => $message ?? 'عملیات موفقیت آمیز',
             'response' => ['data' => $data],
         ];
     }

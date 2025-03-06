@@ -17,6 +17,7 @@ class ApiResponseFormatter
             $originalData = $response->getData(true);
             $statusCode = $response->getStatusCode();
 
+            // If it's an error response
             if ($statusCode >= 400) {
                 return response()->json([
                     'message' => $originalData['message'] ?? Response::$statusTexts[$statusCode],
@@ -25,18 +26,19 @@ class ApiResponseFormatter
                 ], $statusCode);
             }
 
+
             $data = $originalData['response']['data'] ?? ($originalData['data'] ?? $originalData);
-            $responseStatus = $originalData['status'] ?? $statusCode;
-
-
-            $finalStatus = $statusCode;
+            $responseStatus = $originalData['status'] ?? 'success';
+            $message = $originalData['message'] ?? 'عملیات موفقیت آمیز';
 
             return response()->json([
-                'data' => $data ?: ['message' => 'عملیات موفق بود'],
-                'status' => 'success',
-            ], $finalStatus);
+                'data' => $data ?: ['message' => $message],
+                'status' => $responseStatus,
+                'message' => $message,
+            ], $statusCode);
         }
 
         return $response;
     }
+
 }
