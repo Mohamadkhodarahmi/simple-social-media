@@ -47,26 +47,16 @@ class PostController extends Controller
                 ]);
             }
 
-
             $post->load(['user', 'like', 'comments', 'attachments']);
-
-            $resource = new PostResource($post);
-            if (json_encode($resource) === false) {
-                throw new \Exception('خطا در تبدیل داده به JSON');
-            }
-
             return response()->json(
-                ApiResponses::success($resource),
+                ApiResponses::success(new PostResource($post), 201),
                 201
             );
         } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::error('خطای اعتبارسنجی در store پست: ' . $e->getMessage());
             return response()->json(ApiResponses::validationError($e->errors()), 422);
         } catch (\Illuminate\Database\Eloquent\RelationNotFoundException $e) {
-            Log::error('خطای رابطه در store پست: ' . $e->getMessage());
             return response()->json(ApiResponses::error('خطا در بارگذاری روابط.', 500, ['error' => $e->getMessage()]), 500);
         } catch (\Exception $e) {
-            Log::error('خطا در store پست: ' . $e->getMessage());
             return response()->json(ApiResponses::error('خطای سرور رخ داد.', 500, ['error' => $e->getMessage()]), 500);
         }
     }

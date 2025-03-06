@@ -25,13 +25,14 @@ class ApiResponseFormatter
                 ], $statusCode);
             }
 
-            $data = $originalData['response']['data'] ?? $originalData;
+            $data = $originalData['response']['data'] ?? ($originalData['data'] ?? $originalData);
             $responseStatus = $originalData['status'] ?? $statusCode;
 
-            $finalStatus = (is_numeric($responseStatus) && $responseStatus >= 100 && $responseStatus <= 599) ? $responseStatus : 200;
+
+            $finalStatus = $statusCode;
 
             return response()->json([
-                'data' => $data,
+                'data' => $data ?: ['message' => 'عملیات موفق بود'],
                 'status' => 'success',
             ], $finalStatus);
         }
